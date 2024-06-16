@@ -17,9 +17,13 @@ import {
     getMinUmuMP,
     getMinVtolMP,
     getNonGroundMovementWeight,
+    getJumpBoosterWeight,
+    getPartialWingWeight
 } from "./movement";
 import { clamp } from "./utils";
 import { getChassisWeight, getMaxWeight, getMinWeight } from "./chassis";
+import { getManipulatorWeight, mountInPairs } from "./manipulators";
+import { getArmorWeight } from "./armor";
 
 function validateTechBase(design: BattleArmor) {
     const {
@@ -174,6 +178,54 @@ function validateNonGroundMovement(design: BattleArmor) {
     return validatedDesign;
 }
 
+function validateManipulator(design: BattleArmor, previousDesign: BattleArmor) {
+    const {
+        manipulators,
+        manipulators: { left, right },
+    } = design;
+    const {
+        manipulators: { left: previousLeft, right: previousRight }
+    } = previousDesign;
+    let validatedDesign = design;
+    let location = 'left';
+    let newManipulators: any = {};
+    let newIsPair = false;
+    let oldIsPair = false;
+
+    if (left !== previousLeft) {
+        oldIsPair = mountInPairs(previousLeft);
+        newIsPair = mountInPairs(left);
+        location = 'left';
+    }
+
+    if (right !== previousRight) {
+        oldIsPair = mountInPairs(previousRight);
+        newIsPair = mountInPairs(right);
+        location = 'right';
+    }
+
+    if (newIsPair) {
+        newManipulators["left"] = left;
+        newManipulators["right"] = left;
+    } else if (oldIsPair) {
+        if (location === "left") {
+            newManipulators["right"] = left;
+        }
+
+        if (location === "right") {
+            newManipulators["left"] = right;
+        }
+    }
+
+    return validatedDesign = {
+        ...validatedDesign,
+        manipulators: {
+            ...manipulators,
+            ...newManipulators,
+        }
+    };
+}
+
 function calculateWeight(design: BattleArmor) {
     const weight = {
         min: getMinWeight(design),
@@ -184,23 +236,32 @@ function calculateWeight(design: BattleArmor) {
     weight.current =
         getChassisWeight(design) +
         getGroundMovementWeight(design) +
-        getNonGroundMovementWeight(design);
+        getNonGroundMovementWeight(design) +
+        getJumpBoosterWeight(design) +
+        getPartialWingWeight(design) +
+        getManipulatorWeight(design) +
+        getArmorWeight(design);
 
     return weight;
 }
 
-export function updateDesign(design: BattleArmor) {
+export function updateDesign(delta: Partial<BattleArmor>, previousDesign: BattleArmor) {
     const computedProperties = {
         weight: 0,
     };
 
-    let validatedDesign = design;
+    let validatedDesign = {
+        ...previousDesign,
+        ...delta
+    };
 
     validatedDesign = validateTechBase(validatedDesign);
     validatedDesign = validateWeightClass(validatedDesign);
     validatedDesign = validateBodyType(validatedDesign);
     validatedDesign = validateGroundMovement(validatedDesign);
     validatedDesign = validateNonGroundMovement(validatedDesign);
+    // jump booster and partial wing validation
+    validatedDesign = validateManipulator(validatedDesign, previousDesign);
 
     console.log(calculateWeight(validatedDesign));
 

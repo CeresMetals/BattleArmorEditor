@@ -16,7 +16,6 @@ import {
 
 import { clamp } from "./rules/utils";
 
-import { mountInPairs } from "./rules/manipulators";
 import { getMaxArmorPoints } from "./rules/armor";
 import { updateDesign } from "./rules/design";
 
@@ -95,9 +94,8 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setTechBase = useCallback(
         (value: TechBase) => {
             const { design: updatedDesign } = updateDesign({
-                ...design,
                 techBase: value,
-            });
+            }, design);
 
             setDesign(updatedDesign);
         },
@@ -107,9 +105,8 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setWeightClass = useCallback(
         (value: WeightClass) => {
             const { design: updatedDesign } = updateDesign({
-                ...design,
                 weightClass: value,
-            });
+            }, design);
 
             setDesign(updatedDesign);
         },
@@ -119,9 +116,8 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setBodyType = useCallback(
         (value: BodyType) => {
             const { design: updatedDesign } = updateDesign({
-                ...design,
                 bodyType: value,
-            });
+            }, design);
 
             setDesign(updatedDesign);
         },
@@ -132,12 +128,11 @@ const DesignContextProvider = ({ children }: ContextProps) => {
         (value: number) => {
             const { movement } = design;
             const { design: updatedDesign } = updateDesign({
-                ...design,
                 movement: {
                     ...movement,
                     ground: value,
                 },
-            });
+            }, design);
 
             setDesign(updatedDesign);
         },
@@ -160,12 +155,11 @@ const DesignContextProvider = ({ children }: ContextProps) => {
             const { movement } = design;
 
             const { design: updatedDesign } = updateDesign({
-                ...design,
                 movement: {
                     ...movement,
                     nonGround: value,
                 },
-            });
+            }, design);
 
             setDesign(updatedDesign);
         },
@@ -197,14 +191,14 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setJumpBooster = useCallback(
         (value: boolean) => {
             const { movement } = design;
-
-            setDesign({
-                ...design,
+            const { design: updatedDesign } = updateDesign({
                 movement: {
                     ...movement,
-                    jumpBooster: value,
-                },
-            });
+                    jumpBooster: value
+                }
+            }, design);
+
+            setDesign(updatedDesign);
         },
         [design]
     );
@@ -212,14 +206,14 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setPartialWing = useCallback(
         (value: boolean) => {
             const { movement } = design;
-
-            setDesign({
-                ...design,
+            const { design: updatedDesign } = updateDesign({
                 movement: {
                     ...movement,
-                    partialWing: value,
-                },
-            });
+                    partialWing: value
+                }
+            }, design);
+
+            setDesign(updatedDesign);
         },
         [design]
     );
@@ -227,41 +221,19 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setManipulator = useCallback(
         (value: string, location: string) => {
             const {
-                manipulators,
-                manipulators: { left },
+                manipulators
             } = design;
             let newManipulators: any = {};
-            const oldIsPair = mountInPairs(left);
-            const newIsPair = mountInPairs(value);
+            newManipulators[location] = value;
 
-            if (location === "left") {
-                newManipulators["left"] = value;
-            }
-
-            if (location === "right") {
-                newManipulators["right"] = value;
-            }
-
-            if (newIsPair) {
-                newManipulators["left"] = value;
-                newManipulators["right"] = value;
-            } else if (oldIsPair) {
-                if (location === "left") {
-                    newManipulators["right"] = value;
-                }
-
-                if (location === "right") {
-                    newManipulators["left"] = value;
-                }
-            }
-
-            setDesign({
-                ...design,
+            const { design: updatedDesign } = updateDesign({
                 manipulators: {
                     ...manipulators,
-                    ...newManipulators,
-                },
-            });
+                    ...newManipulators
+                }
+            }, design);
+
+            setDesign(updatedDesign);
         },
         [design]
     );
@@ -269,14 +241,14 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setArmorType = useCallback(
         (value: string) => {
             const { armor } = design;
-
-            setDesign({
-                ...design,
+            const { design: updatedDesign } = updateDesign({
                 armor: {
                     ...armor,
                     type: value,
                 },
-            });
+            }, design);
+
+            setDesign(updatedDesign);
         },
         [design]
     );

@@ -138,5 +138,18 @@ export function getNonGroundMovementWeight(design: BattleArmor): number {
     return 0;
 }
 
-// Jump Booster (Both)
-// Partial Wing (IS)
+export function getJumpBoosterWeight(design: BattleArmor): number {
+    const {
+        movement: { jumpBooster }
+    } = design;
+
+    return jumpBooster ? 125 : 0;
+}
+
+export function getPartialWingWeight(design: BattleArmor): number {
+    const {
+        movement: { partialWing }
+    } = design;
+
+    return partialWing ? 200 : 0;
+}
