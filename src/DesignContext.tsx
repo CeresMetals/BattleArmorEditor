@@ -14,9 +14,6 @@ import {
     NonGroundMode,
 } from "./types";
 
-import { clamp } from "./rules/utils";
-
-import { getMaxArmorPoints } from "./rules/armor";
 import { updateDesign } from "./rules/design";
 
 interface ContextProps {
@@ -93,9 +90,12 @@ const DesignContextProvider = ({ children }: ContextProps) => {
 
     const setTechBase = useCallback(
         (value: TechBase) => {
-            const { design: updatedDesign } = updateDesign({
-                techBase: value,
-            }, design);
+            const { design: updatedDesign } = updateDesign(
+                {
+                    techBase: value,
+                },
+                design
+            );
 
             setDesign(updatedDesign);
         },
@@ -104,9 +104,12 @@ const DesignContextProvider = ({ children }: ContextProps) => {
 
     const setWeightClass = useCallback(
         (value: WeightClass) => {
-            const { design: updatedDesign } = updateDesign({
-                weightClass: value,
-            }, design);
+            const { design: updatedDesign } = updateDesign(
+                {
+                    weightClass: value,
+                },
+                design
+            );
 
             setDesign(updatedDesign);
         },
@@ -115,9 +118,12 @@ const DesignContextProvider = ({ children }: ContextProps) => {
 
     const setBodyType = useCallback(
         (value: BodyType) => {
-            const { design: updatedDesign } = updateDesign({
-                bodyType: value,
-            }, design);
+            const { design: updatedDesign } = updateDesign(
+                {
+                    bodyType: value,
+                },
+                design
+            );
 
             setDesign(updatedDesign);
         },
@@ -127,12 +133,15 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setGroundSpeed = useCallback(
         (value: number) => {
             const { movement } = design;
-            const { design: updatedDesign } = updateDesign({
-                movement: {
-                    ...movement,
-                    ground: value,
+            const { design: updatedDesign } = updateDesign(
+                {
+                    movement: {
+                        ...movement,
+                        ground: value,
+                    },
                 },
-            }, design);
+                design
+            );
 
             setDesign(updatedDesign);
         },
@@ -154,12 +163,15 @@ const DesignContextProvider = ({ children }: ContextProps) => {
         (value: number) => {
             const { movement } = design;
 
-            const { design: updatedDesign } = updateDesign({
-                movement: {
-                    ...movement,
-                    nonGround: value,
+            const { design: updatedDesign } = updateDesign(
+                {
+                    movement: {
+                        ...movement,
+                        nonGround: value,
+                    },
                 },
-            }, design);
+                design
+            );
 
             setDesign(updatedDesign);
         },
@@ -191,12 +203,15 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setJumpBooster = useCallback(
         (value: boolean) => {
             const { movement } = design;
-            const { design: updatedDesign } = updateDesign({
-                movement: {
-                    ...movement,
-                    jumpBooster: value
-                }
-            }, design);
+            const { design: updatedDesign } = updateDesign(
+                {
+                    movement: {
+                        ...movement,
+                        jumpBooster: value,
+                    },
+                },
+                design
+            );
 
             setDesign(updatedDesign);
         },
@@ -206,12 +221,15 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setPartialWing = useCallback(
         (value: boolean) => {
             const { movement } = design;
-            const { design: updatedDesign } = updateDesign({
-                movement: {
-                    ...movement,
-                    partialWing: value
-                }
-            }, design);
+            const { design: updatedDesign } = updateDesign(
+                {
+                    movement: {
+                        ...movement,
+                        partialWing: value,
+                    },
+                },
+                design
+            );
 
             setDesign(updatedDesign);
         },
@@ -220,18 +238,19 @@ const DesignContextProvider = ({ children }: ContextProps) => {
 
     const setManipulator = useCallback(
         (value: string, location: string) => {
-            const {
-                manipulators
-            } = design;
+            const { manipulators } = design;
             let newManipulators: any = {};
             newManipulators[location] = value;
 
-            const { design: updatedDesign } = updateDesign({
-                manipulators: {
-                    ...manipulators,
-                    ...newManipulators
-                }
-            }, design);
+            const { design: updatedDesign } = updateDesign(
+                {
+                    manipulators: {
+                        ...manipulators,
+                        ...newManipulators,
+                    },
+                },
+                design
+            );
 
             setDesign(updatedDesign);
         },
@@ -241,12 +260,15 @@ const DesignContextProvider = ({ children }: ContextProps) => {
     const setArmorType = useCallback(
         (value: string) => {
             const { armor } = design;
-            const { design: updatedDesign } = updateDesign({
-                armor: {
-                    ...armor,
-                    type: value,
+            const { design: updatedDesign } = updateDesign(
+                {
+                    armor: {
+                        ...armor,
+                        type: value,
+                    },
                 },
-            }, design);
+                design
+            );
 
             setDesign(updatedDesign);
         },
@@ -255,17 +277,18 @@ const DesignContextProvider = ({ children }: ContextProps) => {
 
     const setArmorPoints = useCallback(
         (value: number) => {
-            const { armor, weightClass } = design;
-            const maxArmor: number = getMaxArmorPoints(weightClass);
-
-            const points = clamp(value, 0, maxArmor);
-            setDesign({
-                ...design,
-                armor: {
-                    ...armor,
-                    points,
+            const { armor } = design;
+            const { design: updatedDesign } = updateDesign(
+                {
+                    armor: {
+                        ...armor,
+                        points: value,
+                    },
                 },
-            });
+                design
+            );
+
+            setDesign(updatedDesign);
         },
         [design]
     );

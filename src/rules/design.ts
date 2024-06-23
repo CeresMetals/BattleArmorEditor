@@ -18,12 +18,12 @@ import {
     getMinVtolMP,
     getNonGroundMovementWeight,
     getJumpBoosterWeight,
-    getPartialWingWeight
+    getPartialWingWeight,
 } from "./movement";
 import { clamp } from "./utils";
 import { getChassisWeight, getMaxWeight, getMinWeight } from "./chassis";
 import { getManipulatorWeight, mountInPairs } from "./manipulators";
-import { getArmorWeight } from "./armor";
+import { getArmorWeight, getMaxArmorPoints } from "./armor";
 
 function validateTechBase(design: BattleArmor) {
     const {
@@ -184,10 +184,10 @@ function validateManipulator(design: BattleArmor, previousDesign: BattleArmor) {
         manipulators: { left, right },
     } = design;
     const {
-        manipulators: { left: previousLeft, right: previousRight }
+        manipulators: { left: previousLeft, right: previousRight },
     } = previousDesign;
     let validatedDesign = design;
-    let location = 'left';
+    let location = "left";
     let newManipulators: any = {};
     let newIsPair = false;
     let oldIsPair = false;
@@ -195,13 +195,13 @@ function validateManipulator(design: BattleArmor, previousDesign: BattleArmor) {
     if (left !== previousLeft) {
         oldIsPair = mountInPairs(previousLeft);
         newIsPair = mountInPairs(left);
-        location = 'left';
+        location = "left";
     }
 
     if (right !== previousRight) {
         oldIsPair = mountInPairs(previousRight);
         newIsPair = mountInPairs(right);
-        location = 'right';
+        location = "right";
     }
 
     if (newIsPair) {
@@ -217,13 +217,36 @@ function validateManipulator(design: BattleArmor, previousDesign: BattleArmor) {
         }
     }
 
-    return validatedDesign = {
+    validatedDesign = {
         ...validatedDesign,
         manipulators: {
             ...manipulators,
             ...newManipulators,
-        }
+        },
     };
+
+    return validatedDesign;
+}
+
+function validateArmor(design: BattleArmor) {
+    const {
+        armor: { type, points },
+        weightClass,
+    } = design;
+    const maxArmor: number = getMaxArmorPoints(weightClass);
+    let validatedDesign = design;
+
+    const newPoints = clamp(points, 0, maxArmor);
+
+    validatedDesign = {
+        ...validatedDesign,
+        armor: {
+            type,
+            points: newPoints,
+        },
+    };
+
+    return validatedDesign;
 }
 
 function calculateWeight(design: BattleArmor) {
@@ -245,14 +268,25 @@ function calculateWeight(design: BattleArmor) {
     return weight;
 }
 
-export function updateDesign(delta: Partial<BattleArmor>, previousDesign: BattleArmor) {
+export function getComputedValues(design: BattleArmor) {
+    const weight = calculateWeight(design);
+
+    return {
+        weight
+    };
+}
+
+export function updateDesign(
+    delta: Partial<BattleArmor>,
+    previousDesign: BattleArmor
+) {
     const computedProperties = {
         weight: 0,
     };
 
     let validatedDesign = {
         ...previousDesign,
-        ...delta
+        ...delta,
     };
 
     validatedDesign = validateTechBase(validatedDesign);
@@ -262,8 +296,7 @@ export function updateDesign(delta: Partial<BattleArmor>, previousDesign: Battle
     validatedDesign = validateNonGroundMovement(validatedDesign);
     // jump booster and partial wing validation
     validatedDesign = validateManipulator(validatedDesign, previousDesign);
-
-    console.log(calculateWeight(validatedDesign));
+    validatedDesign = validateArmor(validatedDesign);
 
     return {
         design: validatedDesign,
